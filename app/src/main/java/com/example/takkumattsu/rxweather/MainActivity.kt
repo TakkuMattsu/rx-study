@@ -21,6 +21,7 @@ class MainActivity : AppCompatActivity() {
         val listView = findViewById<ListView>(R.id.list)
         val adapter = PrefecturesAdapter(this)
         listView.adapter = adapter
+
         readPrefecture(R.raw.prefectures)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -29,9 +30,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 .subscribe({ prefectureWeather: PrefectureWeather ->
                     adapter.addOrReplace(prefectureWeather)
-                }, { e ->
-                    // TODO: 本当はUIに反映させたい
-                    Log.d("RxWeather", "${e.localizedMessage}")
                 })
     }
 

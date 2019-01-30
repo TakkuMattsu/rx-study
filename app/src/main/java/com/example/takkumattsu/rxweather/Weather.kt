@@ -21,13 +21,14 @@ object Weather {
                     PrefectureWeather(prefecture, weather)
                 }
                 .startWith(PrefectureWeather(prefecture, null))
-                .retry {  }
+                .retry(2)
+                .onErrorReturnItem(PrefectureWeather(prefecture, null))
     }
 
     private fun loadWeather(prefecture: String): Observable<String> {
         val loader = when (prefecture) {
             //"yamagata" -> YamagataLoader()
-            "oita" -> OitaLoader()
+            "aomori" -> OitaLoader()
             else -> DefaultLoader()
         }
         return loader.loadWeather(prefecture)
@@ -54,7 +55,18 @@ object Weather {
     // 大分はエラーが一回くる
     private class OitaLoader : WeatherLoader {
         override fun loadWeather(prefecture: String): Observable<String> {
-            return Observable.error<String>(Throwable("${prefecture} 取得失敗"))
+            // 最初2回はエラー
+            // 最後は成功
+            var counter = 0
+            return Observable.create<String> {emitter ->
+                if (counter > 2) {
+                    emitter.onNext("sunny")
+                    emitter.onComplete()
+                } else {
+                    counter += 1
+                    emitter.onError(Throwable("${prefecture} 取得失敗"))
+                }
+            }
         }
     }
 }
