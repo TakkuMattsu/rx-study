@@ -17,14 +17,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val text = findViewById<TextView>(R.id.hello_text)
         val timer = Observable.interval(1, TimeUnit.SECONDS, Schedulers.newThread()).take(4)
-        val counter = Observable.just(3L, 2L, 1L, 0L )
+        val counter = Observable.just("3", "2", "1", "Hello RX" )
                 Observable
-                .zip(timer, counter, BiFunction<Long, Long, Long> {_ , num -> num })
+                .zip(timer, counter, BiFunction<Long, String, String> {_ , num -> num })
                 .doOnEach { Log.d("RxWeather", "do on each $it") }
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        { text.text = "$it" },
-                        {},
-                        { text.text= "Hello RX" })
+                .subscribe({ text.text = it })
     }
 }
