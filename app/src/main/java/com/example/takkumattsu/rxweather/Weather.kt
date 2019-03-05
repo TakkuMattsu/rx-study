@@ -8,24 +8,21 @@ import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 
 object Weather {
-    private var counter = 0
     // 都道府県名と null の weather が得られる
     // API アクセスを行い（モックでいい）、都道府県名と weather が設定された
     // PrefectureWeather が得られる
-    fun loadWeather(prefecture: Prefecture): Observable<LoadResult> {
+    fun loadWeather(prefecture: Prefecture): Observable<PrefectureWeather> {
         // 初期値 -> 取れた値
         // 取得して取れたらそのObservable<PrefectureWeather>を返す
         // エラーだったらリトライ処理
         // リトライに2回失敗したらエラーを含んだObservable<PrefectureWeather>を返す
         return loadWeather(prefecture.hepburn)
-                .map<LoadResult> { weather: String ->
-                    LoadResult.Success(prefecture, weather)
+                .map { weather: String ->
+                    PrefectureWeather(prefecture, weather)
                 }
-                .startWith(LoadResult.InProgress(prefecture))
+                .startWith(PrefectureWeather(prefecture, null))
                 .retry(2)
-                .onErrorReturn { error ->
-                    LoadResult.Failed(prefecture, error)
-                }
+                .onErrorReturnItem(PrefectureWeather(prefecture, null))
     }
 
     private fun loadWeather(prefecture: String): Observable<String> {
@@ -60,7 +57,7 @@ object Weather {
         override fun loadWeather(prefecture: String): Observable<String> {
             // 最初2回はエラー
             // 最後は成功
-
+            var counter = 0
             return Observable.create<String> {emitter ->
                 if (counter > 2) {
                     emitter.onNext("sunny")

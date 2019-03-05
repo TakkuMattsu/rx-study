@@ -21,39 +21,15 @@ class MainActivity : AppCompatActivity() {
         val listView = findViewById<ListView>(R.id.list)
         val adapter = PrefecturesAdapter(this)
         listView.adapter = adapter
-//        adapter.onClickRetry
-//                .flatMap {
-//                    Weather.loadWeather(it)
-//                }
-//                .subscribe({
-//                    adapter.addOrReplace(it)
-//                })
-//        adapter.onClickRetry = {
-//            Weather.loadWeather(it)
-//                    .subscribe({
-//                        adapter.addOrReplace(it)
-//                    })
-//        }
-//        readPrefecture(R.raw.prefectures)
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .flatMap { prefecture: Prefecture ->
-//                    Weather.loadWeather(prefecture)
-//                }
-//                .subscribe({ loadResult: LoadResult ->
-//                    adapter.addOrReplace(loadResult)
-//                })
-        Observable
-                .merge(adapter.onClickRetry,
-                        readPrefecture(R.raw.prefectures)
-                                .subscribeOn(Schedulers.io()))
+
+        readPrefecture(R.raw.prefectures)
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .flatMap { prefecture: Prefecture ->
                     Weather.loadWeather(prefecture)
-                            .subscribeOn(Schedulers.newThread())
                 }
-                .subscribe({ loadResult: LoadResult ->
-                    adapter.addOrReplace(loadResult)
+                .subscribe({ prefectureWeather: PrefectureWeather ->
+                    adapter.addOrReplace(prefectureWeather)
                 })
     }
 
